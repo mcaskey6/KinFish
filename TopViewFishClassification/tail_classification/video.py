@@ -16,8 +16,8 @@ def load_video_clips(fish_vid_paths):
     """
 
     frame_list = []
-    for j in range(len(fish_vid_paths)):
-        fish_vid = cv2.VideoCapture(fish_vid_paths[j])
+    for j, path in enumerate(fish_vid_paths):
+        fish_vid = cv2.VideoCapture(path)
 
         # Load Video
         vid_length = int(fish_vid.get(cv2.CAP_PROP_FRAME_COUNT))

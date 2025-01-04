@@ -138,7 +138,12 @@ def get_angle(point1_x, point1_y, point2_x, point2_y, point3_x, point3_y, signed
 
     # Get the sign of the angle according to the orientation of the points
     if signed:
-        holder = pd.DataFrame({point1_x.name: point1_x, point1_y.name: point1_y, point2_x.name: point2_x, point2_y.name: point2_y, point3_x.name: point3_x, point3_y.name: point3_y})
+        holder = pd.DataFrame({point1_x.name: point1_x, 
+                               point1_y.name: point1_y, 
+                               point2_x.name: point2_x, 
+                               point2_y.name: point2_y, 
+                               point3_x.name: point3_x, 
+                               point3_y.name: point3_y})
         cols = holder.columns
         angles = np.multiply(angles, holder.apply(lambda x: extract_angle_sign(x[cols[0]], x[cols[1]], x[cols[2]], x[cols[3]], x[cols[4]], x[cols[5]]), axis=1))
 
@@ -208,18 +213,64 @@ def top_view_extract_features(df):
             
         Returns: (DataFrame) dataframe of containing extracte features for the whole recording
     """
+    
+    top_view_cols = ['Tail Tip', 'Lower Tail', 'Mid-Tail', 
+                     'Upper Tail', 'SB', 'Head', 'Lower Left Eye', 
+                     'Upper Left Eye', 'Lower Right Eye', 'Upper Right Eye']
+    
+    for col in top_view_cols:
+        str_err = ("A label expected by top_view extract_features is missing from the inputted dataframe." 
+                   " top_view_extract_features expects both x and y coordinates for the labels: Tail Tip," 
+                   " Lower Tail, Mid-Tail, Upper Tail, SB, Head, Lower Left Eye, Upper Left Eye," 
+                   " Lower Right Eye, and Upper Right Eye.")
+        assert (col + ' x') in df.columns, str_err
+        assert (col + ' y') in df.columns, str_err
 
     features_df = pd.DataFrame()
 
     # Tail Angles. These are Extracted as Features. These angles have signs indicating which direction the tail is bent in
-    mid_lower_tip_angle = get_angle(df['Mid-Tail x'], df['Mid-Tail y'], df['Lower Tail x'], df['Lower Tail y'], df['Tail Tip x'], df['Tail Tip y'])
-    upper_mid_lower_angle = get_angle(df['Upper Tail x'], df['Upper Tail y'], df['Mid-Tail x'], df['Mid-Tail y'], df['Lower Tail x'], df['Lower Tail y'])
-    SB_upper_mid_angle = get_angle(df['SB x'], df['SB y'], df['Upper Tail x'], df['Upper Tail y'], df['Mid-Tail x'], df['Mid-Tail y'])
-    head_SB_upper_angle = get_angle(df['Head x'], df['Head y'], df['SB x'], df['SB y'], df['Upper Tail x'], df['Upper Tail y'])
+    mid_lower_tip_angle = get_angle(df['Mid-Tail x'], 
+                                    df['Mid-Tail y'], 
+                                    df['Lower Tail x'], 
+                                    df['Lower Tail y'], 
+                                    df['Tail Tip x'], 
+                                    df['Tail Tip y'])
+    upper_mid_lower_angle = get_angle(df['Upper Tail x'], 
+                                      df['Upper Tail y'], 
+                                      df['Mid-Tail x'], 
+                                      df['Mid-Tail y'], 
+                                      df['Lower Tail x'], 
+                                      df['Lower Tail y'])
+    SB_upper_mid_angle = get_angle(df['SB x'], 
+                                   df['SB y'], 
+                                   df['Upper Tail x'], 
+                                   df['Upper Tail y'], 
+                                   df['Mid-Tail x'], 
+                                   df['Mid-Tail y'])
+    head_SB_upper_angle = get_angle(df['Head x'], 
+                                    df['Head y'], 
+                                    df['SB x'], 
+                                    df['SB y'], 
+                                    df['Upper Tail x'], 
+                                    df['Upper Tail y'])
 
     # Eye Angles. These are Extracted as Features. They do not have an angle sign since the eyes do not move 360 degrees
-    left_eye_angle = get_eye_angle(df['Upper Left Eye x'], df['Upper Left Eye y'], df['Lower Left Eye x'], df['Lower Left Eye y'], df['Head x'], df['Head y'], df['SB x'], df['SB y'])
-    right_eye_angle = get_eye_angle(df['Upper Right Eye x'], df['Upper Right Eye y'], df['Lower Right Eye x'], df['Lower Right Eye y'], df['Head x'], df['Head y'], df['SB x'], df['SB y'])
+    left_eye_angle = get_eye_angle(df['Upper Left Eye x'], 
+                                   df['Upper Left Eye y'], 
+                                   df['Lower Left Eye x'], 
+                                   df['Lower Left Eye y'], 
+                                   df['Head x'], 
+                                   df['Head y'], 
+                                   df['SB x'], 
+                                   df['SB y'])
+    right_eye_angle = get_eye_angle(df['Upper Right Eye x'], 
+                                    df['Upper Right Eye y'], 
+                                    df['Lower Right Eye x'], 
+                                    df['Lower Right Eye y'], 
+                                    df['Head x'], 
+                                    df['Head y'], 
+                                    df['SB x'], 
+                                    df['SB y'])
     
     # Loading Tail Angles to Dataframe
     features_df['Lower Tail Angle'] = mid_lower_tip_angle

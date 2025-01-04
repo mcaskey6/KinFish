@@ -52,6 +52,12 @@ def get_gaussian(window, scale, high_p, low_p, exp):
         Returns: 
             gauss (ndarray): Normalized (values sum to 1) gaussian window
     """
+    
+    str_err = " must be in the interval [0,1]"
+    assert scale >= 0 and scale <= 1, "scale" + str_err
+    assert high_p >= 0 and high_p <= 1, "high_p" + str_err
+    assert low_p >= 0 and low_p <= 1, "low_p" + str_err
+
     # Applies exponential mapping. If exp = 1, no change is made
     scale = (1 - scale) ** exp
     
@@ -313,6 +319,8 @@ def adaptive_gaussian_filter(df, window, order=1, right_leaning=True, high_p=0.2
         Returns: 
             new_window (ndarray): the transformed window with gaussian filter applied
     """
+    assert order >= 0, "order must be a positive integer"
+
     # Make copy of dataframe on which to apply transformations
     new_df = df.copy()
 
@@ -378,11 +386,14 @@ def threshold_filter(df, window, thresh, func, order=1, right_leaning = True):
         Returns: 
             new_window (ndarray): the transformed window with threshold filter applied
     """
+    assert order >= 0, "order must be a positive integer"
+
     # Make copy of dataframe on which to apply transformations
     new_df = df.copy()
 
     # Iterate over columns of dataframe
     for i in range(len(df.columns)):
+        assert thresh[i] >= 0 and thresh[i] <= 1, "all thresh values must be in the interval [0,1]"
 
         # Only apply filter if window size is greater than zero
         if window[i] > 0:
@@ -479,6 +490,8 @@ def threshold_match_filter(col1_x, col1_y, col2_x, col2_y, window, thresh, func,
     new_cols = [col1_x.copy(), col1_y.copy(), col2_x.copy(), col2_y.copy()]
 
     for i in range(len(new_cols)):
+        assert thresh[i] >= 0 and thresh[i] <= 1, "all thresh values must be in the interval [0,1]"
+
         # Only apply filter if window size is greater than zero
         if window[i] > 0:
             
@@ -541,6 +554,7 @@ def gaussian_match_filter(col1_x, col1_y, col2_x, col2_y, window, ind_norm = Fal
         Returns: 
             new_window (ndarray): the transformed window with gaussian filter applied
     """
+    
     # Calculate element-wise correlation
     corr_x = correlation(col1_x, col2_x, ind_norm, inverse, True)
     corr_y = correlation(col1_y, col2_y, ind_norm, inverse, True)

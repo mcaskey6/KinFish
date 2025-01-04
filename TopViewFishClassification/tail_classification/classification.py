@@ -47,28 +47,53 @@ def compile_tree_data(dfs, train_split = 0.95, fish_split = None, active_rest_sp
         x (ndarray): Formatted data for all frames (across all recordings)
         y (ndarray): Grouund truth values for all manually labelled frames
     """
+    assert train_split >= 0 and train_split <= 1, "train_split must be in the interval [0,1]"
+
     # Extract an equal ratio of training data from each recording if fish_split is not specified
     labelled_nums = [len(df[df['Active']!=-1]) for df in dfs]
     if fish_split is None:
          fish_split = labelled_nums / np.sum(labelled_nums)
+    else:
+        assert sum(fish_split) == 1, "fish_split must sum to 1"
+        assert len(fish_split) == len(dfs), "fish_split must be the same length as dfs"
 
     all_data = []
     all_train_ind = []
     all_test_ind = []
 
     # Iterate through each recording
-    for i in range(len(dfs)):
-        df = dfs[i]
+    for i, df in enumerate(dfs):
         set_size = math.floor(np.sum(labelled_nums) * train_split * fish_split[i])
+        # Discard the unlabelled frames
+        tree_df_labelled = df[df['Active'] != -1]
 
         if active_rest_split is not None:
             # How much of the training data from a single recording should be of active frames
             active_size = math.ceil(set_size * active_rest_split)
+            active_frames = sum(tree_df_labelled['Active']==1)
+            print(active_frames)
+            print(active_size)
+            assert active_size <= active_frames, ("The active_rest_split is too large given the number" 
+                                                  " of active frames in the fish recording at index " + str(i) + 
+                                                  ". Given the train_split and fish_split, the number of active frames" 
+                                                  " taken from this fish recording for training would be " + 
+                                                  str(active_size) + " but there are only "
+                                                  + str(active_frames) + " active frames in this recording.")
             # How much of the training data from a single recording should be of rest frames
             rest_size = math.floor(set_size * (1 - active_rest_split))
+            rest_frames = sum(tree_df_labelled['Active']==0)
+            assert rest_size <= rest_frames, ("The active_rest_split is too small given the number" 
+                                                " of rest frames in the fish recording at index " + str(i) + 
+                                                ". Given the train_split and fish_split, the number of rest frames" 
+                                                " taken from this fish recording for training would be " + 
+                                                str(rest_size) + " but there are only "
+                                                + str(rest_frames) + " rest frames in this recording.")
 
-        # Discard the unlabelled frames
-        tree_df_labelled = df[df['Active'] != -1]
+        assert set_size <= len(tree_df_labelled), ("The fish split value of " + str(fish_split[i]) + " at index "
+                                                   + str(i) + " is too large. Given the train_split, " 
+                                                   "the number of training frames taken from this fish recording" 
+                                                   " would be " + str(set_size) + " but there are only "
+                                                   + str(len(tree_df_labelled)) + " frames in this recording.")
 
         # If specified, control the ratio of active to quiescent frames in the dataset
         if active_rest_split is not None:
@@ -106,8 +131,7 @@ def compile_tree_data(dfs, train_split = 0.95, fish_split = None, active_rest_sp
         all_data.append(data)
 
     # Iterate through the data for each recording
-    for i in range(len(dfs)):
-        df, data, train_ind, test_ind = dfs[i], all_data[i], all_train_ind[i], all_test_ind[i]
+    for i, (df, data, train_ind, test_ind) in enumerate(zip(dfs, all_data, all_train_ind, all_test_ind)):
 
         # Separate the formatted data into separate arrays with the training data, test data, and labelled data. 
         # Also separate the active/rest labels into training, test, and all labelled data arrays
@@ -160,8 +184,7 @@ def get_active_intervals(datas, clf, median_filter_window = 0):
     intervals = [0, 0, 0]
 
     # Iterate through the data for each recording
-    for i in range(len(datas)):
-        data = datas[i]
+    for i, data in enumerate(datas):
         pred_i = clf.predict(data)
         
         # Filter out intervals of activity less than a certain value
@@ -209,12 +232,11 @@ def generate_correlation_matrix(intervals, dfs):
     Returns: (ndarray) A matrix of the dynamic time warping distances between each pair of 
     intervals
     """
-    interval_num = intervals.shape[0]
+    
     series = []
 
     # Iterate through each interval
-    for i in range(interval_num):
-        interval = intervals[i]
+    for interval in intervals:
         df = dfs[interval[2]]
         # Compile the extracted features from each interval into a single array
         angles = df.values[interval[0]:interval[1], :-1]

@@ -59,6 +59,8 @@ def annotate_video(pdf, df, frame_list, points, p_cutoff = 0.6, circle_color = (
     Returns:
         disp_frame_list (list(ndarray,...)): List of annotated frames
     '''
+    assert p_cutoff >= 0 and p_cutoff <= 1, "p_cutoff must be in the interval [0,1]"
+
     # Dataframe with positions of labels to be  displayed
     disp_pdf = pdf.copy()
 

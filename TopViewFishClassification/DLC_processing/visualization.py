@@ -55,9 +55,7 @@ def plot_trajectories(df_arr, ncols = 2, figsize=(20,30), df_names = None, y_axi
     axs_titles = [''] * max(lengths)
     
     # Generates each subplot
-    for l in range(len(df_arr)):
-        arr = arrs[l]
-        df = df_arr[l]
+    for l, (df, arr) in enumerate(zip(df_arr, arrs)):
 
         # Plot the trajectories for each column in the selected dataframe.
         for i in range(lengths[l]):

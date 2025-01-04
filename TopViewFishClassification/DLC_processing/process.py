@@ -56,9 +56,8 @@ def concatenate_clips(csv_files):
     """
 
     # Iterate through each clip
-    for i in range(len(csv_files)):
-        csv_file = csv_files[i]
-
+    for i, csv_file in enumerate(csv_files):
+        
         # Load clip into a Pandas DataFrame Format
         clip_df, points = process_csv(csv_file)
         # Label which video clip each frame came from

@@ -96,6 +96,8 @@ def plot_rot_interval(df, interval, ax, colormap = plt.cm.YlOrRd_r, x_to_y = 2, 
         info: If true, displays additional info about the interval in the plot. This includes the starting and ending frame numbers of the
         interval and the number of the recording from which the interval originates.
     '''
+    assert x_to_y > 0, "x_to_y should be positive"
+
     ax.axis('off')
     ax.set_aspect('equal')
 
@@ -178,6 +180,7 @@ def get_rot_interval_data(df, interval, ax, x_to_y, color = 'black', max_interva
         y_data (ndarray): the y positions of the bodypart labels that make up the skeleton to be animated
         plot (matplotlib.Lines.Line2D): The lines representing the zebrafish skeleton to be animated 
     """
+    assert x_to_y > 0, "x_to_y should be positive"
 
      # Extract the pose data for the given interval
     interval_min = max(0, interval[0]-int_padding)
@@ -212,7 +215,7 @@ def get_rot_interval_data(df, interval, ax, x_to_y, color = 'black', max_interva
     y_data = []
 
     # Generate and save the skeleton plots for animation of the subplot into arrays
-    for i in range(0, interval_len):
+    for i in range(interval_len):
         pose = np.vstack([pos_x[:,i], pos_y[:,i]])
         pose = np.matmul(A, pose - np.array([origin]).transpose())
         if i == 0:
@@ -312,7 +315,7 @@ def plot_animated_intervals(dfs, intervals, max_interval, save_as, ncols = 1, co
     # Set the format of the plot
     fig_height = shape[0] * fig_width/(shape[1] * x_to_y) * 2
     fig, axs = plt.subplots(shape[0], shape[1], squeeze=False, figsize = (fig_width, fig_height))
-    for i in range(0, shape[0] * shape[1]):
+    for i in range(shape[0] * shape[1]):
         ax = axs[i//shape[1], i%shape[1]]
         ax.axis('off')
         ax.set_aspect('equal')
@@ -335,7 +338,7 @@ def plot_animated_intervals(dfs, intervals, max_interval, save_as, ncols = 1, co
         y_datas.append(y_data)
         plots.append(plot)
 
-    # A helper functino for setting up the animation. This
+    # A helper function for setting up the animation. This
     # has to be passed to FuncAnimation. See
     # https://matplotlib.org/stable/users/explain/animations/animations.html
     # for more information
